@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Player</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #player {
+            width: 640px;
+            height: 360px;
+        }
+
+        #playButton {
+            margin-top: 10px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #searchForm {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+ <form id="searchForm" onsubmit="return searchVideo()">
+        <input type="text" id="searchInput" placeholder="Enter search term">
+        <button type="submit">Search</button>
+    </form>
+    <div id="player"></div>
+   
+
+   
+
+    <script>
+        // Replace with your YouTube API Key
+        const apiKey = "AIzaSyA9gefHaD7xKl7EWrc2vk4nscew1vTr730";
+
+        // Load YouTube API script asynchronously
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        let player;
+
+        // Callback function called when YouTube API script is loaded
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '360',
+                width: '640',
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                    'showinfo': 0,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady
+                }
+            });
+        }
+
+        // Callback function called when the player is ready
+        function onPlayerReady(event) {
+            document.getElementById('playButton').style.display = 'block';
+        }
+
+        // Function to play the video
+        function playVideo() {
+            player.playVideo();
+        }
+
+        // Function to search for a video
+        function searchVideo() {
+            const searchTerm = document.getElementById('searchInput').value;
+            if (searchTerm.trim() === '') {
+                alert('Please enter a search term.');
+                return false;
+            }
+
+            // Use YouTube Data API to search for videos
+            const apiUrl = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&part=snippet&q=${searchTerm}&type=video`;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        const videoId = data.items[0].id.videoId;
+                        player.loadVideoById(videoId);
+                    } else {
+                        alert('No videos found for the given search term.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+
+            return false; // Prevent form submission
+        }
+    </script>
+</body>
+</html>
